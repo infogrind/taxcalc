@@ -11,11 +11,12 @@ import argparse
 import datetime
 import sys
 from collections.abc import Callable
+from dataclasses import replace
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
 from .calc import compute_cantonal, compute_federal, find_commune
-from .config import TARIFS, Config, find_config_dir, load_config, save_config
+from .config import TARIFS, Config, YearAmounts, find_config_dir, load_config, save_config
 from .errors import TaxcalcError
 from .rates import YearRates, available_years, load_rates
 from .report import TARIF_LABELS, chf, format_report, pct
@@ -44,6 +45,15 @@ def parse_tarif(text: str) -> str:
     if choice not in TARIFS:
         raise ValueError(f"tarif must be one of: {', '.join(TARIFS)}")
     return choice
+
+
+def parse_yes_no(text: str) -> bool:
+    answer = text.strip().lower()
+    if answer in ("y", "yes", "j", "ja"):
+        return True
+    if answer in ("n", "no", "nein"):
+        return False
+    raise ValueError("please answer y or n")
 
 
 def parse_children(text: str) -> int:
@@ -174,9 +184,9 @@ def _run(
 
     config_path = config_dir / "config.toml"
     if asked:
-        answer = ask(f"Save these settings to {config_path}? (y/n)", str, "y")
-        if answer.strip().lower().startswith("y"):
-            save_config(config_path, Config(tarif=tarif, commune=commune, children=children))
+        if ask(f"Save these settings to {config_path}? (y/n)", parse_yes_no, "y"):
+            config = replace(config, tarif=tarif, commune=commune, children=children)
+            save_config(config_path, config)
             print(f"Saved. Edit {config_path} to change them later.")
     elif interactive:
         print(
@@ -184,11 +194,21 @@ def _run(
             f"(from {config_path})"
         )
 
+    # Amounts saved for this year (if any) are offered as defaults.
+    saved = config.years.get(year)
     if interactive:
-        income = ask("Steuerbares Einkommen, Staats- und Gemeindesteuer (CHF)", parse_amount)
-        assets = ask("Steuerbares Vermögen (CHF)", parse_amount, "0")
+        income = ask(
+            "Steuerbares Einkommen, Staats- und Gemeindesteuer (CHF)",
+            parse_amount,
+            chf(saved.income) if saved else None,
+        )
+        assets = ask(
+            "Steuerbares Vermögen (CHF)", parse_amount, chf(saved.assets) if saved else "0"
+        )
         federal_income = ask(
-            "Steuerbares Einkommen, direkte Bundessteuer (CHF)", parse_amount, chf(income)
+            "Steuerbares Einkommen, direkte Bundessteuer (CHF)",
+            parse_amount,
+            chf(saved.federal_income if saved else income),
         )
         print()
     assert income is not None
@@ -198,6 +218,13 @@ def _run(
     cantonal = compute_cantonal(rates, tarif, commune, income, assets)
     federal = compute_federal(rates, tarif, federal_income, children)
     print(format_report(year, tarif, children, cantonal, federal), end="")
+
+    amounts = YearAmounts(income=income, assets=assets, federal_income=federal_income)
+    if interactive and amounts != saved:
+        print()
+        if ask(f"Save income and assets for {year} in config.toml? (y/n)", parse_yes_no, "y"):
+            save_config(config_path, replace(config, years={**config.years, year: amounts}))
+            print(f"Saved to {config_path}; they will be offered as defaults next time.")
     return 0
 
 

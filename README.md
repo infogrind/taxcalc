@@ -39,6 +39,18 @@ children = 0        # federal tax reduction per child
 
 Command-line options (`--tarif`, `--commune`, `--children`) override it.
 
+After an interactive run, it offers to save the entered amounts for that tax
+year; the next run for the same year proposes them as defaults:
+
+```toml
+[years.2026]
+income = 150000          # steuerbares Einkommen, Staats- und Gemeindesteuer
+assets = 500000          # steuerbares Vermögen
+federal_income = 155000  # steuerbares Einkommen, direkte Bundessteuer
+```
+
+Saving rewrites the file, so comments you add yourself are not kept.
+
 ## Rates
 
 One file per tax year in [`src/taxcalc/rates/`](src/taxcalc/rates/), with

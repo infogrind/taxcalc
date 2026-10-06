@@ -1,6 +1,8 @@
+from decimal import Decimal
+
 import pytest
 
-from taxcalc.config import Config, find_config_path, load_config, save_config
+from taxcalc.config import Config, YearAmounts, find_config_path, load_config, save_config
 from taxcalc.errors import TaxcalcError
 
 
@@ -25,6 +27,51 @@ def test_save_then_load_roundtrip(tmp_path):
     config = Config(tarif="single", commune='Aeugst a.A. "x"', children=1)
     save_config(path, config)
     assert load_config(path) == config
+
+
+def test_save_then_load_roundtrip_with_years(tmp_path):
+    path = tmp_path / "config.toml"
+    config = Config(
+        tarif="married",
+        commune="Zürich",
+        years={
+            2026: YearAmounts(Decimal(150000), Decimal("500000.50"), Decimal(155000)),
+            2025: YearAmounts(Decimal(1), Decimal(0), Decimal(2)),
+        },
+    )
+    save_config(path, config)
+    assert load_config(path) == config
+    assert "[years.2025]" in path.read_text(encoding="utf-8")
+
+
+def test_save_without_household_settings(tmp_path):
+    # A config holding only amounts must not write tarif = "None".
+    path = tmp_path / "config.toml"
+    config = Config(years={2026: YearAmounts(Decimal(1), Decimal(2), Decimal(3))})
+    save_config(path, config)
+    assert load_config(path) == config
+
+
+def test_year_defaults_for_assets_and_federal_income(tmp_path):
+    config = load_config(write(tmp_path, "[years.2026]\nincome = 100000\n"))
+    assert config.years[2026] == YearAmounts(Decimal(100000), Decimal(0), Decimal(100000))
+
+
+@pytest.mark.parametrize(
+    ("text", "message"),
+    [
+        ("years = 5\n", r"\[years\] must be a table"),
+        ("[years.latest]\nincome = 1\n", "the key must be a year"),
+        ("[years]\n2026 = 5\n", "years.2026 must be a table"),
+        ("[years.2026]\nassets = 1\n", "income is missing"),
+        ("[years.2026]\nincome = -1\n", "years.2026.income must be a non-negative number"),
+        ('[years.2026]\nincome = 1\nassets = "2"\n', "assets must be a non-negative number"),
+        ("[years.2026]\nincome = 1\nincom = 2\n", "unknown setting"),
+    ],
+)
+def test_bad_years_section_raises(tmp_path, text, message):
+    with pytest.raises(TaxcalcError, match=message):
+        load_config(write(tmp_path, text))
 
 
 def test_invalid_toml_raises(tmp_path):

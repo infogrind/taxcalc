@@ -6,12 +6,13 @@ regenerate after an intended change, run with TAXCALC_UPDATE_GOLDEN=1.
 """
 
 import os
+from decimal import Decimal
 from pathlib import Path
 
 import pytest
 
 from taxcalc import cli
-from taxcalc.config import Config, load_config
+from taxcalc.config import Config, YearAmounts, load_config
 
 GOLDEN = Path(__file__).parent / "golden"
 
@@ -73,17 +74,17 @@ def test_non_interactive_with_children_and_overrides(configured, capsys):
 
 
 def test_interactive_with_config(configured, monkeypatch, capsys):
-    prompts = answers(monkeypatch, "2026", "150000", "500000", "155000")
+    prompts = answers(monkeypatch, "2026", "150000", "500000", "155000", "n")
     assert cli.main([]) == 0
     assert prompts[0] == "Tax year (2024–2026) [2026]: "
     out = capsys.readouterr().out
     assert "Settings: Verheiratetentarif, Gemeinde Zürich, 0 child(ren)" in out
-    assert out.endswith((GOLDEN / "married_2026.txt").read_text(encoding="utf-8"))
+    assert (GOLDEN / "married_2026.txt").read_text(encoding="utf-8") in out
 
 
 def test_interactive_defaults(configured, monkeypatch, capsys):
     # Empty answers take the defaults: assets 0, federal income = cantonal income.
-    answers(monkeypatch, "", "100000", "", "")
+    answers(monkeypatch, "", "100000", "", "", "n")
     assert cli.main([]) == 0
     out = capsys.readouterr().out
     assert "Steuerperiode 2026" in out
@@ -92,16 +93,17 @@ def test_interactive_defaults(configured, monkeypatch, capsys):
 
 
 def test_interactive_reprompts_on_bad_input(configured, monkeypatch, capsys):
-    answers(monkeypatch, "1999", "2026", "lots", "-5", "100000", "", "")
+    answers(monkeypatch, "1999", "2026", "lots", "-5", "100000", "", "", "maybe", "n")
     assert cli.main([]) == 0
     err = capsys.readouterr().err
     assert "no tax rates for '1999'" in err
     assert "not a valid amount: 'lots'" in err
     assert "amount must be zero or positive" in err
+    assert "please answer y or n" in err
 
 
 def test_first_run_asks_settings_and_saves_them(xdg, monkeypatch, capsys):
-    prompts = answers(monkeypatch, "2026", "married", "zurich", "2", "y", "100000", "", "")
+    prompts = answers(monkeypatch, "2026", "married", "zurich", "2", "y", "100000", "", "", "n")
     assert cli.main([]) == 0
     assert any("Tarif" in p for p in prompts)
     assert load_config(xdg / "config.toml") == Config(tarif="married", commune="Zürich", children=2)
@@ -109,7 +111,7 @@ def test_first_run_asks_settings_and_saves_them(xdg, monkeypatch, capsys):
 
 
 def test_first_run_can_decline_saving(xdg, monkeypatch):
-    answers(monkeypatch, "2026", "single", "", "0", "n", "100000", "", "")
+    answers(monkeypatch, "2026", "single", "", "0", "n", "100000", "", "", "n")
     assert cli.main([]) == 0
     assert not (xdg / "config.toml").exists()
 
@@ -163,3 +165,48 @@ def test_rates_override_from_config_dir(configured, capsys):
 )
 def test_parse_amount(text, amount):
     assert str(cli.parse_amount(text)) == amount
+
+
+def test_amounts_are_saved_and_offered_as_defaults(configured, monkeypatch, capsys):
+    prompts = answers(monkeypatch, "2026", "150000", "500000", "155000", "")
+    assert cli.main([]) == 0
+    assert prompts[-1] == "Save income and assets for 2026 in config.toml? (y/n) [y]: "
+    config = load_config(configured / "config.toml")
+    assert config.years[2026] == YearAmounts(
+        income=Decimal(150000), assets=Decimal(500000), federal_income=Decimal(155000)
+    )
+    assert config.tarif == "married"  # household settings are kept
+    capsys.readouterr()
+
+    # Second run: the saved amounts are the defaults, and unchanged amounts aren't re-offered.
+    prompts = answers(monkeypatch, "2026", "", "", "")
+    assert cli.main([]) == 0
+    assert prompts[1:] == [
+        "Steuerbares Einkommen, Staats- und Gemeindesteuer (CHF) [150'000.00]: ",
+        "Steuerbares Vermögen (CHF) [500'000.00]: ",
+        "Steuerbares Einkommen, direkte Bundessteuer (CHF) [155'000.00]: ",
+    ]
+    assert (GOLDEN / "married_2026.txt").read_text(encoding="utf-8") in capsys.readouterr().out
+
+
+def test_saving_amounts_keeps_other_years(configured, monkeypatch):
+    with open(configured / "config.toml", "a", encoding="utf-8") as f:
+        f.write("\n[years.2025]\nincome = 90000\n")
+    answers(monkeypatch, "2026", "100000", "", "", "y")
+    assert cli.main([]) == 0
+    years = load_config(configured / "config.toml").years
+    assert sorted(years) == [2025, 2026]
+    assert years[2025].income == Decimal(90000)
+
+
+def test_saved_amounts_for_other_year_are_not_used(configured, monkeypatch):
+    with open(configured / "config.toml", "a", encoding="utf-8") as f:
+        f.write("\n[years.2025]\nincome = 90000\n")
+    prompts = answers(monkeypatch, "2026", "100000", "", "", "n")
+    assert cli.main([]) == 0
+    assert prompts[1] == "Steuerbares Einkommen, Staats- und Gemeindesteuer (CHF): "
+
+
+def test_non_interactive_never_saves_amounts(configured):
+    assert cli.main(["--income", "100000"]) == 0
+    assert load_config(configured / "config.toml").years == {}
