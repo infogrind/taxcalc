@@ -1,0 +1,230 @@
+# Tax rates for tax year 2026 (Steuerperiode 2026).
+# Edit this file (or drop an override into ~/.config/taxcalc/rates/2026.toml) when rates change.
+
+[federal]
+# Direkte Bundessteuer, Art. 36 DBG, tariff 2026 as published by the ESTV
+# (ESTV Rundschreiben 2-215-D-2025).
+income_rounding = 100   # taxable income is rounded down to a multiple of this
+minimum_tax = 25        # tax amounts below this are not levied (Art. 36 Abs. 3)
+child_reduction = 263     # reduction of the tax amount per child (Art. 36 Abs. 2bis)
+
+# Each step: [income threshold, tax at that income, CHF per further CHF 100].
+# From flat_from on, the tax is flat_rate % of the whole income.
+[federal.single]   # Art. 36 Abs. 1
+steps = [
+  [15200, 0, 0.77], [33200, 138.60, 0.88], [43500, 229.20, 2.64],
+  [58000, 612.00, 2.97], [76200, 1152.50, 5.94], [82100, 1502.95, 6.60],
+  [108900, 3271.75, 8.80], [141500, 6140.55, 11.00], [185100, 10936.55, 13.20],
+]
+flat_from = 794000
+flat_rate = 11.5
+
+[federal.married]  # Art. 36 Abs. 2 (also single parents living with children)
+steps = [
+  [29700, 0, 1], [53400, 237, 2], [61300, 395, 3], [79100, 929, 4], [94900, 1561, 5],
+  [108700, 2251, 6], [120600, 2965, 7], [130500, 3658, 8], [138400, 4290, 9],
+  [144300, 4821, 10], [148300, 5221, 11], [150400, 5452, 12], [152400, 5692, 13],
+]
+flat_from = 941400
+flat_rate = 11.5
+
+[zurich]
+# Staats- und Gemeindesteuer Kanton Zürich.
+# Tariffs: § 35 / § 47 StG as adjusted for inflation from 1.1.2026 (Verordnung über den
+# Ausgleich der kalten Progression vom 30. Juni 2025, OS 80, 273; valid for 2026 and 2027).
+# Staatssteuerfuss 2026/2027: Kantonsratsbeschluss (95%).
+canton_steuerfuss = 95   # % of the einfache Staatssteuer
+personal_tax = 24        # Personalsteuer per adult (§ 199 StG)
+income_rounding = 100    # taxable income is rounded down to a multiple of this
+assets_rounding = 1000   # taxable assets are rounded down to a multiple of this
+
+# Each bracket: [width in CHF, rate]. Income rates in %, asset rates in per mille.
+# top_rate applies to everything above the listed brackets.
+[zurich.income.single]   # Grundtarif, § 35 Abs. 1 StG
+brackets = [
+  [7000, 0], [5000, 2], [4800, 3], [8000, 4], [9700, 5], [11200, 6],
+  [13100, 7], [17600, 8], [34000, 9], [33700, 10], [53300, 11], [69300, 12],
+]
+top_rate = 13
+
+[zurich.income.married]  # Verheiratetentarif, § 35 Abs. 2 StG
+brackets = [
+  [14100, 0], [6400, 2], [8100, 3], [9800, 4], [11200, 5], [14500, 6],
+  [32200, 7], [32400, 8], [48500, 9], [57900, 10], [62900, 11], [72600, 12],
+]
+top_rate = 13
+
+[zurich.assets.single]   # Grundtarif, § 47 Abs. 1 StG (per mille)
+brackets = [
+  [81000, 0], [241000, 0.5], [404000, 1], [645000, 1.5], [968000, 2], [965000, 2.5],
+]
+top_rate = 3
+
+[zurich.assets.married]  # Verheiratetentarif, § 47 Abs. 2 StG (per mille)
+brackets = [
+  [161000, 0], [242000, 0.5], [402000, 1], [646000, 1.5], [967000, 2], [967000, 2.5],
+]
+top_rate = 3
+
+[zurich.communes]
+# Gemeindesteuerfuss 2026 in % (without church tax), source: https://www.web.statistik.zh.ch/ogd/data/steuerfuesse/kanton_zuerich_stf_timeseries.csv
+"Adliswil" = 104
+"Aesch" = 91
+"Aeugst a.A." = 92
+"Affoltern a.A." = 122
+"Altikon" = 114
+"Andelfingen" = 119
+"Bachenbülach" = 106
+"Bachs" = 128
+"Bassersdorf" = 114
+"Bauma" = 120
+"Benken" = 110
+"Berg a.I." = 98
+"Birmensdorf" = 112
+"Bonstetten" = 106
+"Boppelsen" = 94
+"Brütten" = 85
+"Bubikon" = 118
+"Buch a.I." = 106
+"Buchs" = 105
+"Bäretswil" = 104
+"Bülach" = 114
+"Dachsen" = 111
+"Dielsdorf" = 105
+"Dietikon" = 121
+"Dietlikon" = 105
+"Dinhard" = 90
+"Dorf" = 99
+"Dägerlen" = 106
+"Dällikon" = 107
+"Dänikon" = 120
+"Dättlikon" = 112
+"Dübendorf" = 92
+"Dürnten" = 113
+"Egg" = 101
+"Eglisau" = 113
+"Elgg" = 119
+"Ellikon a.d.Th." = 117
+"Elsau" = 117
+"Embrach" = 112
+"Erlenbach" = 76
+"Fehraltorf" = 111
+"Feuerthalen" = 114
+"Fischenthal" = 122
+"Flaach" = 107
+"Flurlingen" = 111
+"Freienstein-Teufen" = 99
+"Fällanden" = 99
+"Geroldswil" = 112
+"Glattfelden" = 120
+"Gossau" = 117
+"Greifensee" = 101
+"Grüningen" = 116
+"Hagenbuch" = 121
+"Hausen a.A." = 112
+"Hedingen" = 100
+"Henggart" = 111
+"Herrliberg" = 73
+"Hettlingen" = 97
+"Hinwil" = 116
+"Hittnau" = 113
+"Hochfelden" = 116
+"Hombrechtikon" = 113
+"Horgen" = 90
+"Höri" = 110
+"Hüntwangen" = 108
+"Hüttikon" = 113
+"Illnau-Effretikon" = 113
+"Kappel a.A." = 102
+"Kilchberg" = 72
+"Kleinandelfingen" = 118
+"Kloten" = 100
+"Knonau" = 116
+"Küsnacht" = 73
+"Langnau a.A." = 106
+"Laufen-Uhwiesen" = 104
+"Lindau" = 106
+"Lufingen" = 97
+"Marthalen" = 107
+"Maschwanden" = 128
+"Maur" = 81
+"Meilen" = 79
+"Mettmenstetten" = 98
+"Männedorf" = 87
+"Mönchaltorf" = 108
+"Neerach" = 77
+"Neftenbach" = 98
+"Niederglatt" = 106
+"Niederhasli" = 112
+"Niederweningen" = 100
+"Nürensdorf" = 90
+"Oberembrach" = 117
+"Oberengstringen" = 109
+"Oberglatt" = 119
+"Oberrieden" = 84
+"Oberweningen" = 94
+"Obfelden" = 118
+"Oetwil a.S." = 114
+"Oetwil a.d.L." = 107
+"Opfikon" = 94
+"Ossingen" = 113
+"Otelfingen" = 108
+"Ottenbach" = 115
+"Pfungen" = 112
+"Pfäffikon" = 110
+"Rafz" = 113
+"Regensberg" = 115
+"Regensdorf" = 117
+"Rheinau" = 112
+"Richterswil" = 99
+"Rickenbach" = 112
+"Rifferswil" = 120
+"Rorbas" = 103
+"Russikon" = 113
+"Rümlang" = 113
+"Rüschlikon" = 75
+"Rüti" = 119
+"Schlatt" = 123
+"Schleinikon" = 106
+"Schlieren" = 111
+"Schwerzenbach" = 103
+"Schöfflisdorf" = 94
+"Seegräben" = 111
+"Seuzach" = 100
+"Stadel" = 111
+"Stallikon" = 101
+"Stammheim" = 112
+"Steinmaur" = 108
+"Stäfa" = 83
+"Thalheim a.d.Th." = 117
+"Thalwil" = 78
+"Truttikon" = 107
+"Trüllikon" = 110
+"Turbenthal" = 122
+"Uetikon a.S." = 84
+"Uitikon" = 78
+"Unterengstringen" = 102
+"Urdorf" = 115
+"Uster" = 112
+"Volken" = 111
+"Volketswil" = 101
+"Wald" = 122
+"Wallisellen" = 93
+"Wangen-Brüttisellen" = 101
+"Wasterkingen" = 116
+"Weiach" = 96
+"Weiningen" = 107
+"Weisslingen" = 116
+"Wettswil a.A." = 89
+"Wetzikon" = 119
+"Wiesendangen" = 86
+"Wil" = 97
+"Wila" = 122
+"Wildberg" = 124
+"Winkel" = 76
+"Winterthur" = 125
+"Wädenswil" = 102
+"Zell" = 115
+"Zollikon" = 76
+"Zumikon" = 71
+"Zürich" = 119

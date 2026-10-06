@@ -1,0 +1,32 @@
+[project]
+name = "taxcalc"
+version = "0.1.0"
+description = "Estimate Swiss income and wealth taxes (Kanton Zürich + direkte Bundessteuer)"
+readme = "README.md"
+authors = [
+    { name = "Marius Kleiner", email = "kleiner@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = []
+
+[project.scripts]
+taxcalc = "taxcalc.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "ruff>=0.16.10",
+]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

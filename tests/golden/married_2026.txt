@@ -1,0 +1,24 @@
+Steuerperiode 2026 · Gemeinde Zürich · Verheiratetentarif
+
+Staats- und Gemeindesteuer
+  Steuerbares Einkommen                               150'000.00
+  Steuerbares Vermögen                                500'000.00
+  Einfache Staatssteuer Einkommen (5.970%)              8'955.00
+  Einfache Staatssteuer Vermögen (0.436‰)                 218.00
+  Total einfache Staatssteuer                           9'173.00
+
+  Staatssteuer Einkommen (95%)                          8'507.25
+  Staatssteuer Vermögen (95%)                             207.10
+  Gemeindesteuer Einkommen (119%)                      10'656.45
+  Gemeindesteuer Vermögen (119%)                          259.42
+  Personalsteuer (2 × 24.00)                               48.00
+  --------------------------------------------------------------
+  Total Staats- und Gemeindesteuer                     19'678.20
+
+Direkte Bundessteuer
+  Steuerbares Einkommen                               155'000.00
+  Steuer gemäss Tarif                                   6'030.00
+  --------------------------------------------------------------
+  Total direkte Bundessteuer                            6'030.00
+
+  TOTAL                                                25'708.20

@@ -1,0 +1,25 @@
+Steuerperiode 2025 · Gemeinde Winterthur · Grundtarif · 1 Kind(er)
+
+Staats- und Gemeindesteuer
+  Steuerbares Einkommen                                80'000.00
+  Steuerbares Vermögen                                      0.00
+  Einfache Staatssteuer Einkommen (5.508%)              4'406.00
+  Einfache Staatssteuer Vermögen (0‰)                       0.00
+  Total einfache Staatssteuer                           4'406.00
+
+  Staatssteuer Einkommen (98%)                          4'317.88
+  Staatssteuer Vermögen (98%)                               0.00
+  Gemeindesteuer Einkommen (125%)                       5'507.50
+  Gemeindesteuer Vermögen (125%)                            0.00
+  Personalsteuer (1 × 24.00)                               24.00
+  --------------------------------------------------------------
+  Total Staats- und Gemeindesteuer                      9'849.40
+
+Direkte Bundessteuer
+  Steuerbares Einkommen                                80'000.00
+  Steuer gemäss Tarif                                   1'381.21
+  Abzug für 1 Kind(er)                                   -263.00
+  --------------------------------------------------------------
+  Total direkte Bundessteuer                            1'118.21
+
+  TOTAL                                                10'967.61
